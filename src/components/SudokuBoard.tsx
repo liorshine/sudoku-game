@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { isValidMove } from '../utils/validateSudoku';
-
+import './SudokuBoard.css';
+import {getHintExplanation , findHint } from '../utils/getHintExplanation';
 type Props = {
   initialBoard: number[][];
   solutionBoard: number[][];
@@ -8,7 +9,7 @@ type Props = {
 
 export const SudokuBoard: React.FC<Props> = ({ initialBoard, solutionBoard }) => {
   const [board, setBoard] = useState<number[][]>(initialBoard);
-
+  const [hintExplanation, setHintExplanation] = useState<string | null>(null);
   useEffect(() => {
     setBoard(initialBoard);
   }, [initialBoard]);
@@ -21,40 +22,44 @@ export const SudokuBoard: React.FC<Props> = ({ initialBoard, solutionBoard }) =>
     setBoard(newBoard);
   };
 
-  const handleCheckBoard = () => {
+  const handleHint = () => {
+  const newBoard = board.map((r) => [...r]);
+  const hint = findHint(newBoard, solutionBoard);
+  
+  if (hint) {
+    const { row, col, value, explanation } = hint;
+    newBoard[row][col] = value;
+    setBoard(newBoard);
+    setHintExplanation(`Ô [${row + 1}, ${col + 1}]: ${explanation}`);
+  } else {
+    setHintExplanation('Không còn ô nào có thể suy luận logic để gợi ý!');
+  }
+};
+
+
+  useEffect(() => {
+    let isComplete = true;
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
-        const value = board[r][c];
-        if (value !== 0 && !isValidMove(value, solutionBoard, r, c)) {
-          alert('There are invalid moves.');
-          return;
+        const val = board[r][c];
+        if (val === 0 || !isValidMove(val, solutionBoard, r, c)) {
+          isComplete = false;
+          break;
         }
       }
+      if (!isComplete) break;
     }
-    alert('Sudoku is valid!');
-  };
+
+    if (isComplete) {
+      setTimeout(() => {
+        alert('Good.');
+      }, 100);
+    }
+  }, [board, solutionBoard]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '16px',
-      }}
-    >
-      <div
-        style={{
-          width: '376px',
-          height: '376px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(9, 40px)',
-          gridTemplateRows: 'repeat(9, 40px)',
-          gap: '2px',
-          border: '3px solid black',
-          boxSizing: 'border-box',
-        }}
-      >
+    <div className="sudoku-container">
+      <div className="sudoku-grid">
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => {
             const isFixed = initialBoard[rowIndex][colIndex] !== 0;
@@ -67,27 +72,27 @@ export const SudokuBoard: React.FC<Props> = ({ initialBoard, solutionBoard }) =>
                 value={cell === 0 ? '' : cell}
                 disabled={isFixed}
                 onChange={(e) => handleChange(rowIndex, colIndex, e.target.value)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  textAlign: 'center',
-                  fontSize: '20px',
-                  border: '1px solid gray',
-                  backgroundColor: isFixed
-                    ? '#ccc'
-                    : cell === 0
-                    ? '#fff'
-                    : isCorrect
-                    ? '#d4f8d4'
-                    : '#f8d4d4',
-                }}
-              />
+                className={`sudoku-cell
+                    ${isFixed ? 'sudoku-fixed' : cell === 0 ? 'sudoku-empty' : isCorrect ? 'sudoku-correct' : 'sudoku-wrong'}
+                    ${rowIndex % 3 === 0 ? 'bold-top' : ''}
+                    ${colIndex % 3 === 0 ? 'bold-left' : ''}
+                    ${(colIndex + 1) % 3 === 0 ? 'bold-right' : ''}
+                    ${(rowIndex + 1) % 3 === 0 ? 'bold-bottom' : ''}
+                `}
+                />
             );
           })
         )}
       </div>
-
-      <button onClick={handleCheckBoard}>Check</button>
+    <br />
+    <div className="sudoku-actions">
+    <button className="hint-button" onClick={handleHint}>
+        Hint
+    </button>
+    {hintExplanation && (
+        <p className="hint-text">{hintExplanation}</p>
+    )}
+    </div>
     </div>
   );
 };
