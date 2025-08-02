@@ -1,4 +1,3 @@
-// utils/generateSudoku.ts
 
 export const generateEmptyBoard = (): number[][] =>
   Array.from({ length: 9 }, () => Array(9).fill(0));
@@ -46,8 +45,8 @@ const solveSudoku = (board: number[][]): boolean => {
 };
 
 export const generateSudoku = (removeCount = 50): {
-  puzzle: number[][],
-  solution: number[][]
+  puzzle: number[][];
+  solution: number[][];
 } => {
   const solution = generateEmptyBoard();
   solveSudoku(solution);

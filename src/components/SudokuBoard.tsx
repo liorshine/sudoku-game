@@ -15,10 +15,9 @@ export const SudokuBoard: React.FC<Props> = ({ initialBoard, solutionBoard }) =>
 
   const handleChange = (row: number, col: number, value: string) => {
     const number = parseInt(value);
-    if (isNaN(number) || number < 1 || number > 9) return;
 
     const newBoard = board.map((r) => [...r]);
-    newBoard[row][col] = number;
+    newBoard[row][col] = isNaN(number) ? 0 : number;
     setBoard(newBoard);
   };
 

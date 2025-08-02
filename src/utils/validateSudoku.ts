@@ -1,4 +1,3 @@
-// utils/validateSudoku.ts
 
 export function isValidMove(
   value: number,
